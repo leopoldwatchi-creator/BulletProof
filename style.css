@@ -19,7 +19,9 @@ body {
     height: 100%;
     user-select: none;
 }
+/* Cette règle reste importante pour cacher les images sur l'échiquier statique */
 div[id^="monEchiquier"] img { display: none !important; }
+
 .piece-blanche {
     color: #FFFFFF;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
@@ -51,4 +53,12 @@ div[id^="monEchiquier"] img { display: none !important; }
 .active-move { 
     background-color: #cdd9e5;
     border-radius: 3px;
+}
+
+/* NOUVELLE RÈGLE CI-DESSOUS : 
+   Cible la "pièce fantôme" qui suit le curseur pendant le drag-and-drop 
+   et cache l'image cassée à l'intérieur.
+*/
+.ui-draggable-dragging img {
+    display: none !important;
 }
