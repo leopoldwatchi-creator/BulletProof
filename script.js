@@ -1,60 +1,92 @@
-// Variable globale pour l'échiquier (board) et la logique du jeu (game)
+// --- INITIALISATION ET CONFIGURATION ---
 let board = null;
-const game = new Chess(); // On crée une instance de la logique du jeu avec la bibliothèque Chess.js
+const game = new Chess();
+const boardElement = $('#monEchiquier'); // On garde une référence à notre div
 
-// --- FONCTIONS DE GESTION DES MOUVEMENTS ---
+// Dictionnaire pour faire le lien entre la notation (ex: 'wK') et le caractère Unicode ('♔')
+const unicodePieces = {
+    'wP': '♙', 'wR': '♖', 'wN': '♘', 'wB': '♗', 'wQ': '♕', 'wK': '♔',
+    'bP': '♟', 'bR': '♜', 'bN': '♞', 'bB': '♝', 'bQ': '♛', 'bK': '♚'
+};
+
+// --- FONCTIONS ---
 
 /**
- * Fonction appelée quand un utilisateur commence à déplacer une pièce.
+ * Cette fonction va dessiner toutes les pièces sur l'échiquier.
+ * On l'appellera à chaque fois que la position change.
  */
-function onDragStart(source, piece, position, orientation) {
-    // Ne pas autoriser le déplacement des pièces si la partie est terminée
-    if (game.game_over()) {
-        return false;
-    }
+function renderUnicodePieces() {
+    // On vide d'abord toutes les cases
+    boardElement.find('.square-55d63').empty();
 
-    // On autorise le déplacement de n'importe quelle couleur pour le moment
-    return true;
+    // On parcourt chaque case de l'échiquier logique
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+            const square = 'abcdefgh'[j] + (8 - i);
+            const piece = game.get(square);
+
+            if (piece) {
+                // Si une pièce existe sur cette case
+                const pieceSymbol = piece.color + piece.type.toUpperCase(); // ex: 'w' + 'P' = 'wP'
+                const unicodeSymbol = unicodePieces[pieceSymbol];
+                
+                // On trouve la div de la case et on y ajoute notre pièce Unicode
+                boardElement.find('.square-' + square)
+                    .html('<div class="piece-unicode">' + unicodeSymbol + '</div>');
+            }
+        }
+    }
 }
+
 
 /**
  * Fonction appelée quand un utilisateur relâche une pièce sur une case.
  */
 function onDrop(source, target) {
-    // Essayer de faire le mouvement dans la logique du jeu (avec chess.js)
     let move = game.move({
         from: source,
         to: target,
-        promotion: 'q' // NOTE: Pour les promotions de pion, on choisit automatiquement une Dame (q)
+        promotion: 'q'
     });
 
-    // Si le mouvement est illégal, on annule le mouvement visuellement.
+    // Si le mouvement est illégal, on annule et on redessine pour être sûr
     if (move === null) {
+        renderUnicodePieces(); // S'assure que rien n'a bougé visuellement
         return 'snapback';
     }
+
+    // Si le mouvement est légal, on redessine tout l'échiquier
+    renderUnicodePieces();
 }
 
 /**
- * Fonction appelée après qu'une pièce soit revenue à sa place (après un coup illégal).
+ * Quand on commence à déplacer, on vide la case de départ pour simuler le "soulèvement"
  */
-function onSnapEnd() {
-    board.position(game.fen());
+function onDragStart(source, piece, position, orientation) {
+    if (game.game_over()) return false;
+    // On efface temporairement la pièce de sa case d'origine
+    boardElement.find('.square-' + source).empty();
 }
 
+/**
+ * Si on annule un déplacement, la pièce retourne à sa place. On redessine tout.
+ */
+function onSnapEnd() {
+    renderUnicodePieces();
+}
 
-// --- CONFIGURATION DE L'ÉCHIQUIER ---
-
+// Configuration de l'échiquier
 const config = {
     draggable: true,
-    position: 'start',
-    // Assurez-vous que cette ligne commence bien par "https://"
-    pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/img/chesspieces/wikipedia/{piece}.png',
-    onDragStart: onDragStart,
+    position: 'start', // Important pour la logique initiale de chess.js
     onDrop: onDrop,
-    onSnapEnd: onSnapEnd
+    onDragStart: onDragStart,
+    onSnapEnd: onSnapEnd,
+    // On ne met PAS de 'pieceTheme'
 };
 
-// --- INITIALISATION ---
-
-// On crée l'échiquier dans la <div id="monEchiquier"> avec la configuration définie ci-dessus.
+// --- LANCEMENT ---
 board = Chessboard('monEchiquier', config);
+
+// On fait le premier dessin des pièces
+renderUnicodePieces();
