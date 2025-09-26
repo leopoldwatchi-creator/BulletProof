@@ -5,31 +5,41 @@ body {
     font-family: sans-serif;
 }
 
-/* Couleurs des cases (inchangé) */
+/* Couleurs des cases (on retire la propriété 'color') */
 .white-1e1d7 {
     background-color: #f0d9b5; /* Beige */
-    color: #f0d9b5;
 }
 
 .black-3c85d {
     background-color: #b58863; /* Marron */
-    color: #b58863;
 }
 
-/* --- NOUVEAUX STYLES POUR LES PIÈCES UNICODE --- */
+/* --- STYLES DES PIÈCES MIS À JOUR --- */
 
-/* Style pour le caractère de la pièce */
 .piece-unicode {
-    font-size: 38px; /* Ajustez si nécessaire */
+    font-size: 38px;
     text-align: center;
-    line-height: 45px; /* Centrage vertical */
+    line-height: 45px;
     width: 100%;
     height: 100%;
-    user-select: none; /* Empêche de sélectionner le texte de la pièce */
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Ajoute une petite ombre pour le relief */
+    user-select: none;
+    /* On enlève l'ombre portée générale pour la définir par couleur */
 }
 
 /* On cache l'image par défaut que chessboard.js essaie de créer */
 div[id^="monEchiquier"] img {
     display: none !important;
+}
+
+/* On définit la couleur pour chaque camp */
+.piece-blanche {
+    color: #FFFFFF; /* Blanc plein */
+    /* On ajoute une ombre foncée pour que les pièces blanches ressortent sur les cases claires */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.piece-noire {
+    color: #000000; /* Noir plein */
+    /* On ajoute une ombre très légère et claire pour donner du relief sur les cases foncées */
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
 }
