@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Échiquier</title>
+
+    <style>
+        /* On définit nos couleurs ici */
+        :root {
+            --board-color-light: #f0d9b5; /* Beige */
+            --board-color-dark: #b58863;  /* Marron */
+        }
+
+        body {
+            /* On centre l'échiquier sur la page */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #333;
+        }
+
+        #chessboard {
+            /* On donne une taille à l'échiquier */
+            width: 80vw;
+            max-width: 700px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chessboard"></div>
+
+    <script type="module">
+        // On importe les bibliothèques
+        import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.8/+esm";
+        import { Chessboard, FEN } from "https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/+esm";
+
+        // LA SOLUTION AU PROBLÈME DE TIMING EST ICI :
+        // On dit au navigateur : "Attends que toute la structure HTML soit prête, et seulement après, exécute le code qui suit."
+        document.addEventListener('DOMContentLoaded', () => {
+        
+            // Le reste du code est maintenant à l'intérieur de cette protection
+            const game = new Chess();
+            const boardElement = document.getElementById("chessboard");
+
+            function handleMove(event) {
+                const { from, to } = event.detail;
+                const move = game.move({ from, to, promotion: "q" });
+
+                if (move === null) return; // Si le coup est illégal, on ne fait rien
+
+                board.setPosition(game.fen());
+            }
+
+            const board = new Chessboard(boardElement, {
+                position: FEN.start,
+                style: {
+                    lightSquare: "var(--board-color-light)",
+                    darkSquare: "var(--board-color-dark)",
+                    pieces: { file: "pieces/staunty.svg" }
+                },
+                assetsUrl: "https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/assets/"
+            });
+
+            board.enableMoveInput(handleMove);
+        });
+    </script>
+
+</body>
+</html>
