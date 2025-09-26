@@ -1,37 +1,41 @@
-/* Style général pour centrer l'échiquier */
+/* Style général */
 body {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
     font-family: sans-serif;
     background-color: #333;
     color: white;
 }
 
+/* Conteneur principal pour le jeu */
+.game-container {
+    display: flex;
+    align-items: flex-start; /* Aligne le haut de l'échiquier et de l'historique */
+    gap: 20px; /* Espace entre l'échiquier et l'historique */
+}
+
 /* Le conteneur de l'échiquier */
 #chessboard {
     display: grid;
-    /* Crée une grille de 8x8 */
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
     width: 600px;
     height: 600px;
-    border: 5px solid #5C3D2E; /* Une bordure marron foncée */
+    border: 5px solid #5C3D2E;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
-/* Style pour chaque case de l'échiquier */
+/* Style pour chaque case */
 .square {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* La taille de la police détermine la taille des pièces en Unicode */
-    font-size: 56px; 
+    font-size: 56px;
     cursor: pointer;
-    /* Effet de transition pour le survol */
     transition: background-color 0.2s ease;
 }
 
@@ -41,10 +45,55 @@ body {
 }
 
 .dark {
-    background-color: #8B4513; /* Marron (SaddleBrown) */
+    background-color: #8B4513; /* Marron */
 }
 
-/* Style pour la case sélectionnée (feedback visuel) */
 .selected {
     background-color: #FFD700; /* Or */
+}
+
+/* --- NOUVEAU : Style pour les pièces --- */
+.piece {
+    /* Permet de s'assurer que le texte ne peut pas être sélectionné au clic */
+    user-select: none;
+}
+.white-piece {
+    color: #FFFFFF; /* Blanc */
+    text-shadow: 0 0 3px black; /* Ajoute un léger contour noir pour la lisibilité */
+}
+.black-piece {
+    color: #000000; /* Noir */
+}
+
+/* --- NOUVEAU : Style pour l'historique des coups --- */
+#history-container {
+    width: 250px;
+    padding: 10px;
+    background-color: #444;
+    border-radius: 5px;
+    border: 2px solid #5C3D2E;
+}
+
+#history-container h2 {
+    text-align: center;
+    margin-top: 0;
+    border-bottom: 1px solid #666;
+    padding-bottom: 10px;
+}
+
+#move-history {
+    height: 500px;
+    overflow-y: auto; /* Ajoute une barre de défilement si l'historique est long */
+}
+
+.move-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+/* Style une ligne sur deux pour une meilleure lisibilité */
+.move-entry:nth-child(odd) {
+    background-color: #555;
 }
