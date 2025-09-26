@@ -1,20 +1,15 @@
-// --- INITIALISATION ET CONFIGURATION ---
 let board = null;
 const game = new Chess();
 const boardElement = $('#monEchiquier');
 const historyElement = $('#historiqueCoups');
 
-// On stocke ici l'historique complet des coups avec les positions (FEN)
-let fullHistory = [{ move: null, fen: 'start' }];
-// Index du coup actuellement affiché
+let fullHistory = [{ move: null, fen: 'start' }]; 
 let viewIndex = 0;
 
 const unicodePieces = {
     'wP': '♙', 'wR': '♖', 'wN': '♘', 'wB': '♗', 'wQ': '♕', 'wK': '♔',
     'bP': '♟', 'bR': '♜', 'bN': '♞', 'bB': '♝', 'bQ': '♛', 'bK': '♚'
 };
-
-// --- FONCTIONS ---
 
 function renderUnicodePieces() {
     boardElement.find('.square-55d63').empty();
@@ -42,10 +37,8 @@ function updateHistory() {
         const moveNumber = (i / 2) + 1;
         const whiteMove = fullHistory[i + 1].move;
         const blackMove = (fullHistory[i + 2]) ? fullHistory[i + 2].move : '';
-
         const whiteId = `move-${i + 1}`;
         const blackId = `move-${i + 2}`;
-
         historyHtml += `<div class="move-pair">${moveNumber}. <span id="${whiteId}">${whiteMove}</span> <span id="${blackId}">${blackMove}</span></div>`;
     }
     historyElement.html(historyHtml);
@@ -53,18 +46,13 @@ function updateHistory() {
     if (viewIndex > 0) {
         historyElement.find(`#move-${viewIndex}`).addClass('active-move');
     }
-
     historyElement.scrollTop(historyElement[0].scrollHeight);
 }
 
 function navigateTo(index) {
     if (index < 0 || index >= fullHistory.length) return;
     viewIndex = index;
-    const position = fullHistory[viewIndex].fen;
-    
-    game.load(position);
-    
-    // On s'assure de n'utiliser que notre fonction de rendu
+    game.load(fullHistory[viewIndex].fen);
     renderUnicodePieces();
     updateHistory();
 }
@@ -73,25 +61,19 @@ function onDrop(source, target) {
     if (viewIndex < fullHistory.length - 1) {
         fullHistory = fullHistory.slice(0, viewIndex + 1);
     }
-
     let move = game.move({ from: source, to: target, promotion: 'q' });
-
     if (move === null) {
         renderUnicodePieces();
         return 'snapback';
     }
-
     fullHistory.push({ move: move.san, fen: game.fen() });
     viewIndex++;
-    
     renderUnicodePieces();
     updateHistory();
 }
 
 function onDragStart(source, piece, position, orientation) {
-    if (game.game_over() || game.turn() !== piece.charAt(0)) {
-        return false;
-    }
+    if (game.game_over() || game.turn() !== piece.charAt(0)) return false;
     boardElement.find('.square-' + source).empty();
 }
 
@@ -101,26 +83,20 @@ function onSnapEnd() {
 
 const config = {
     draggable: true,
-    // PAS de 'position: 'start'' ici, c'est crucial
+    // L'ASTUCE DÉCISIVE EST ICI :
+    // On donne à la bibliothèque une image valide mais invisible (pixel transparent)
+    // pour qu'elle arrête de chercher des fichiers .png et de générer des erreurs 404.
+    pieceTheme: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
     onDrop: onDrop,
     onDragStart: onDragStart,
     onSnapEnd: onSnapEnd,
 };
 
-// --- LANCEMENT ---
 board = Chessboard('monEchiquier', config);
-renderUnicodePieces(); // On dessine la position initiale manuellement
+renderUnicodePieces();
 
-// --- GESTIONNAIRE D'ÉVÉNEMENTS CLAVIER ---
 $(document).on('keydown', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        e.preventDefault();
-    }
-
-    if (e.key === 'ArrowLeft') {
-        navigateTo(viewIndex - 1);
-    }
-    if (e.key === 'ArrowRight') {
-        navigateTo(viewIndex + 1);
-    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') e.preventDefault();
+    if (e.key === 'ArrowLeft') navigateTo(viewIndex - 1);
+    if (e.key === 'ArrowRight') navigateTo(viewIndex + 1);
 });
