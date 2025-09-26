@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Échiquier</title>
+    <title>Échiquier Fiable</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/styles/cm-chessboard.css"/>
 
     <style>
-        /* On définit nos couleurs ici */
+        /* Notre propre style pour les couleurs et le centrage */
         :root {
             --board-color-light: #f0d9b5; /* Beige */
             --board-color-dark: #b58863;  /* Marron */
         }
-
         body {
-            /* On centre l'échiquier sur la page */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,9 +21,7 @@
             margin: 0;
             background-color: #333;
         }
-
-        #chessboard {
-            /* On donne une taille à l'échiquier */
+        #chessboard-container {
             width: 80vw;
             max-width: 700px;
         }
@@ -31,42 +29,47 @@
 </head>
 <body>
 
-    <div id="chessboard"></div>
+    <div id="chessboard-container"></div>
 
-    <script type="module">
-        // On importe les bibliothèques
-        import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.8/+esm";
-        import { Chessboard, FEN } from "https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/+esm";
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/dist/cm-chessboard.umd.js"></script>
 
-        // LA SOLUTION AU PROBLÈME DE TIMING EST ICI :
-        // On dit au navigateur : "Attends que toute la structure HTML soit prête, et seulement après, exécute le code qui suit."
-        document.addEventListener('DOMContentLoaded', () => {
-        
-            // Le reste du code est maintenant à l'intérieur de cette protection
-            const game = new Chess();
-            const boardElement = document.getElementById("chessboard");
+    <script>
+        // On ne lance le code que maintenant, en toute sécurité.
 
-            function handleMove(event) {
-                const { from, to } = event.detail;
-                const move = game.move({ from, to, promotion: "q" });
+        // On récupère l'élément HTML.
+        const boardContainer = document.getElementById("chessboard-container");
 
-                if (move === null) return; // Si le coup est illégal, on ne fait rien
+        // On initialise la logique du jeu. L'objet "Chess" est maintenant disponible globalement.
+        const game = new Chess();
 
-                board.setPosition(game.fen());
-            }
+        // C'est la fonction qui gère les déplacements.
+        function handleMove(event) {
+            const { from, to } = event.detail;
+            const move = game.move({ from, to, promotion: "q" });
 
-            const board = new Chessboard(boardElement, {
-                position: FEN.start,
-                style: {
-                    lightSquare: "var(--board-color-light)",
-                    darkSquare: "var(--board-color-dark)",
-                    pieces: { file: "pieces/staunty.svg" }
-                },
-                assetsUrl: "https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/assets/"
-            });
+            if (move === null) return; // Coup illégal
 
-            board.enableMoveInput(handleMove);
+            // On met à jour la position visuelle.
+            board.setPosition(game.fen());
+        }
+
+        // On crée l'échiquier visuel.
+        // Note: avec cette version de la bibliothèque, il faut utiliser "cmChessboard.Chessboard".
+        const board = new cmChessboard.Chessboard(boardContainer, {
+            position: "start",
+            style: {
+                lightSquare: "var(--board-color-light)",
+                darkSquare: "var(--board-color-dark)",
+                pieces: { file: "pieces/staunty.svg" }
+            },
+            assetsUrl: "https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/assets/"
         });
+
+        // On active le mouvement des pièces.
+        board.enableMoveInput(handleMove);
+
     </script>
 
 </body>
