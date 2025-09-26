@@ -35,14 +35,25 @@ function onSnapEnd() {
 
 // --- CONFIGURATION DE L'ÉCHIQUIER ---
 
+// Fichier : script.js
+
+// ... (tout le début du fichier avec onDragStart, onDrop, etc. est correct)
+
+
+// --- CONFIGURATION DE L'ÉCHIQUIER ---
+
 const config = {
     draggable: true,
     position: 'start',
-    // === LA LIGNE MODIFIÉE CI-DESSOUS ===
-    // Au lieu d'un chemin local, on utilise une URL complète vers les images des pièces.
+    // VÉRIFIEZ BIEN CETTE LIGNE, C'EST L'URL COMPLÈTE QUI PERMET D'AFFICHER LES PIÈCES
     pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/img/chesspieces/wikipedia/{piece}.png',
     onDragStart: onDragStart,
     onDrop: onDrop,
+    onSnapEnd: onSnapEnd
+};
+
+// Initialisation de l'échiquier
+board = Chessboard('monEchiquier', config);
     onSnapEnd: onSnapEnd
 };
 
