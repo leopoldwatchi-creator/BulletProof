@@ -5,17 +5,22 @@ body {
     font-family: sans-serif;
 }
 
-/* Couleurs des cases (on retire la propriété 'color') */
+/* NOUVEAU : Conteneur pour aligner l'échiquier et l'historique */
+.game-container {
+    display: flex;
+    align-items: flex-start; /* Aligne les éléments en haut */
+    gap: 20px; /* Espace entre l'échiquier et l'historique */
+}
+
+/* Couleurs des cases (inchangé) */
 .white-1e1d7 {
-    background-color: #f0d9b5; /* Beige */
+    background-color: #f0d9b5;
 }
-
 .black-3c85d {
-    background-color: #b58863; /* Marron */
+    background-color: #b58863;
 }
 
-/* --- STYLES DES PIÈCES MIS À JOUR --- */
-
+/* Styles des pièces (inchangé) */
 .piece-unicode {
     font-size: 38px;
     text-align: center;
@@ -23,23 +28,42 @@ body {
     width: 100%;
     height: 100%;
     user-select: none;
-    /* On enlève l'ombre portée générale pour la définir par couleur */
 }
-
-/* On cache l'image par défaut que chessboard.js essaie de créer */
 div[id^="monEchiquier"] img {
     display: none !important;
 }
-
-/* On définit la couleur pour chaque camp */
 .piece-blanche {
-    color: #FFFFFF; /* Blanc plein */
-    /* On ajoute une ombre foncée pour que les pièces blanches ressortent sur les cases claires */
+    color: #FFFFFF;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
-
 .piece-noire {
-    color: #000000; /* Noir plein */
-    /* On ajoute une ombre très légère et claire pour donner du relief sur les cases foncées */
+    color: #000000;
     text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* NOUVEAU : Style de l'encart historique */
+.historique-panel {
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+}
+.historique-panel h2 {
+    margin-top: 0;
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+#historiqueCoups {
+    width: 200px;
+    height: 400px; /* Hauteur équivalente à l'échiquier */
+    overflow-y: auto; /* Ajoute une barre de défilement si la liste est trop longue */
+    font-family: monospace; /* Police plus adaptée pour les notations */
+    font-size: 16px;
+}
+
+/* Style pour chaque paire de coups (ex: 1. e4 e5) */
+.move-pair {
+    padding: 2px 5px;
 }
