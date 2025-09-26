@@ -1,0 +1,50 @@
+/* Style général pour centrer l'échiquier */
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: sans-serif;
+    background-color: #333;
+    color: white;
+}
+
+/* Le conteneur de l'échiquier */
+#chessboard {
+    display: grid;
+    /* Crée une grille de 8x8 */
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    width: 600px;
+    height: 600px;
+    border: 5px solid #5C3D2E; /* Une bordure marron foncée */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Style pour chaque case de l'échiquier */
+.square {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* La taille de la police détermine la taille des pièces en Unicode */
+    font-size: 56px; 
+    cursor: pointer;
+    /* Effet de transition pour le survol */
+    transition: background-color 0.2s ease;
+}
+
+/* Couleurs des cases */
+.light {
+    background-color: #E6D4B7; /* Beige */
+}
+
+.dark {
+    background-color: #8B4513; /* Marron (SaddleBrown) */
+}
+
+/* Style pour la case sélectionnée (feedback visuel) */
+.selected {
+    background-color: #FFD700; /* Or */
+}
