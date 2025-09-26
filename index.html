@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Entraîneur d'Ouvertures</title>
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <h1>Mon Entraîneur d'Ouvertures</h1>
+        
+        <div id="myBoard" style="width: 400px"></div>
+
+        <div class="controls">
+            <button id="trainBtn">S'entraîner !</button>
+            <button id="exploreBtn">Explorer (Reset)</button>
+        </div>
+
+        <div class="info-panel">
+            <h3 id="infoTitle">Prochain coup théorique :</h3>
+            <p id="infoContent">-</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+            integrity="sha384-ZvpUoO/+PpLXR1NJ7QT"
+            crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
+    
+    <script src="repertoire.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
