@@ -1,8 +1,8 @@
-/* script.js (version finale corrigée) */
+/* script.js (version finale corrigée - v2) */
 
-// CORRECTION 1 : On utilise une URL d'import plus stable et officielle pour le CDN
+// CORRECTION : On utilise la bonne URL pour le paquet chess.js
+import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.8/+esm"
 import { Chessboard, FEN } from "https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/+esm"
-import { Chess } from "https://cdn.jsdelivr.net/npm/chess.mjs@1.0.0/chess.mjs"
 
 // --- INITIALISATION ---
 
@@ -37,13 +37,11 @@ const board = new Chessboard(boardContainer, {
     position: FEN.start,
     style: {
         lightSquare: "var(--board-color-light)",
-        // CORRECTION 2 : Il y avait un double tiret ici (--board--color-dark)
-        darkSquare: "var(--board-color-dark)", 
+        darkSquare: "var(--board-color-dark)",
         pieces: {
-            file: "pieces/staunty.svg" 
+            file: "pieces/staunty.svg"
         }
     },
-    // Cette ligne est cruciale et correcte, elle indique où trouver les pièces
     assetsUrl: "https://cdn.jsdelivr.net/npm/cm-chessboard@8.5.4/assets/"
 })
 
