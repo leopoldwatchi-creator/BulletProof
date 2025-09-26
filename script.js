@@ -2,35 +2,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const boardElement = document.getElementById('chessboard');
     const historyElement = document.getElementById('move-history');
     
-    // Pièces Unicode pleines. Structure : [pièce, couleur]
-    // 'w' pour blanc (white), 'b' pour noir (black)
-    const initialBoard = [
-        ['♜', 'b'], ['♞', 'b'], ['♝', 'b'], ['♛', 'b'], ['♚', 'b'], ['♝', 'b'], ['♞', 'b'], ['♜', 'b'],
-        ['♟', 'b'], ['♟', 'b'], ['♟', 'b'], ['♟', 'b'], ['♟', 'b'], ['♟', 'b'], ['♟', 'b'], ['♟', 'b'],
+    // Structure : [pièce, couleur, nom pour notation]
+    const PIECES = {
+        '♜': { color: 'b', name: 'R' }, '♞': { color: 'b', name: 'N' }, '♝': { color: 'b', name: 'B' }, '♛': { color: 'b', name: 'Q' }, '♚': { color: 'b', name: 'K' },
+        '♟': { color: 'b', name: 'P' },
+        '♖': { color: 'w', name: 'R' }, '♘': { color: 'w', name: 'N' }, '♗': { color: 'w', name: 'B' }, '♕': { color: 'w', name: 'Q' }, '♔': { color: 'w', name: 'K' },
+        '♙': { color: 'w', name: 'P' },
+    };
+
+    const initialBoardSetup = [
+        '♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜',
+        '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟',
         null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null,
-        ['♙', 'w'], ['♙', 'w'], ['♙', 'w'], ['♙', 'w'], ['♙', 'w'], ['♙', 'w'], ['♙', 'w'], ['♙', 'w'],
-        ['♖', 'w'], ['♘', 'w'], ['♗', 'w'], ['♕', 'w'], ['♔', 'w'], ['♗', 'w'], ['♘', 'w'], ['♖', 'w'],
+        '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙',
+        '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖',
     ];
 
+    let boardState = []; // On va utiliser cet array pour la logique du jeu
     let selectedSquare = null;
     let moveCount = 1;
-    let whiteMove = ''; // Pour stocker le coup des blancs
 
-    // Fonction pour convertir un index (0-63) en notation algébrique (e.g., "a1")
+    // Convertit un index (0-63) en notation (e.g., "a1")
     function getAlgebraicNotation(index) {
         const col = index % 8;
         const row = 8 - Math.floor(index / 8);
         const file = String.fromCharCode('a'.charCodeAt(0) + col);
         return `${file}${row}`;
     }
+    
+    // *** NOUVELLE FONCTION : Génère la notation algébrique correcte ***
+    function getMoveNotation(pieceSymbol, fromIndex, toIndex, isCapture) {
+        const pieceInfo = PIECES[pieceSymbol];
+        const toNotation = getAlgebraicNotation(toIndex);
 
-    // Fonction pour créer l'échiquier
+        if (pieceInfo.name === 'P') { // Logique pour le pion
+            if (isCapture) {
+                const fromFile = getAlgebraicNotation(fromIndex)[0];
+                return `${fromFile}x${toNotation}`;
+            }
+            return toNotation; // e.g., "e4"
+        } else { // Logique pour les autres pièces
+            const captureChar = isCapture ? 'x' : '';
+            return `${pieceInfo.name}${captureChar}${toNotation}`; // e.g., "Nf3" ou "Nxf3"
+        }
+    }
+
     function createBoard() {
         boardElement.innerHTML = '';
-        initialBoard.forEach((pieceData, index) => {
+        boardState = [...initialBoardSetup]; // Copie la configuration initiale
+        
+        boardState.forEach((pieceSymbol, index) => {
             const square = document.createElement('div');
             square.classList.add('square');
             square.dataset.index = index;
@@ -42,12 +66,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 square.classList.add('dark');
             }
             
-            if (pieceData) {
-                const [piece, color] = pieceData;
+            if (pieceSymbol) {
+                const pieceInfo = PIECES[pieceSymbol];
                 const pieceElement = document.createElement('span');
                 pieceElement.classList.add('piece');
-                pieceElement.classList.add(color === 'w' ? 'white-piece' : 'black-piece');
-                pieceElement.innerHTML = piece;
+                pieceElement.classList.add(pieceInfo.color === 'w' ? 'white-piece' : 'black-piece');
+                pieceElement.innerHTML = pieceSymbol;
                 square.appendChild(pieceElement);
             }
 
@@ -58,64 +82,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function onSquareClick(event) {
         const clickedSquare = event.currentTarget;
-        
-        if (selectedSquare === null) {
-            // Sélectionner une case uniquement si elle contient une pièce
-            if (clickedSquare.hasChildNodes()) {
-                selectedSquare = clickedSquare;
-                selectedSquare.classList.add('selected');
-            }
-        } else {
-            const fromIndex = selectedSquare.dataset.index;
-            const toIndex = clickedSquare.dataset.index;
+        const clickedIndex = parseInt(clickedSquare.dataset.index);
+
+        if (selectedSquare) {
+            // --- C'est le deuxième clic (pour déplacer) ---
+            const fromIndex = parseInt(selectedSquare.dataset.index);
             
-            // Si on clique sur la même case, on déselectionne
-            if(fromIndex === toIndex) {
-                 selectedSquare.classList.remove('selected');
-                 selectedSquare = null;
-                 return;
+            // Annuler la sélection si on reclique sur la même case
+            if (fromIndex === clickedIndex) {
+                selectedSquare.classList.remove('selected');
+                selectedSquare = null;
+                return;
             }
 
-            // Générer le mouvement en notation
-            const pieceSymbol = selectedSquare.textContent;
-            const fromNotation = getAlgebraicNotation(fromIndex);
-            const toNotation = getAlgebraicNotation(toIndex);
+            const pieceSymbol = boardState[fromIndex];
+            const isCapture = boardState[clickedIndex] !== null;
+
+            // Obtenir la notation AVANT de modifier l'état du plateau
+            const notation = getMoveNotation(pieceSymbol, fromIndex, toIndex, isCapture);
+
+            // 1. Mettre à jour l'état logique du plateau
+            boardState[clickedIndex] = boardState[fromIndex];
+            boardState[fromIndex] = null;
             
-            // Déplacer la pièce visuellement
-            if (clickedSquare.hasChildNodes()) {
-                clickedSquare.innerHTML = ''; // "Capture" en supprimant l'ancienne pièce
-            }
+            // 2. Mettre à jour l'affichage (le DOM)
+            if(isCapture) { clickedSquare.innerHTML = ''; } // Vider la case si capture
             clickedSquare.appendChild(selectedSquare.firstChild);
-            
-            // Mettre à jour l'historique
-            logMove(pieceSymbol, fromNotation, toNotation);
 
-            // Déselectionner
+            // 3. Mettre à jour l'historique
+            logMove(notation);
+
+            // 4. Réinitialiser
             selectedSquare.classList.remove('selected');
             selectedSquare = null;
+            
+        } else if (boardState[clickedIndex]) {
+            // --- C'est le premier clic (pour sélectionner) ---
+            selectedSquare = clickedSquare;
+            selectedSquare.classList.add('selected');
         }
     }
 
-    // Fonction pour ajouter un coup à l'historique
-    function logMove(piece, from, to) {
-        const moveNotation = `${piece} ${from}-${to}`;
-
-        if (moveCount % 2 !== 0) { // C'est le tour des blancs
-            whiteMove = moveNotation;
-        } else { // C'est le tour des noirs, on peut créer la ligne complète
+    // *** FONCTION logMove ENTIÈREMENT REVUE ***
+    function logMove(notation) {
+        const isWhiteTurn = moveCount % 2 !== 0;
+        
+        if (isWhiteTurn) {
+            // Si c'est le tour des blancs, on crée une nouvelle ligne
+            const moveNumber = Math.ceil(moveCount / 2);
             const moveEntry = document.createElement('div');
             moveEntry.classList.add('move-entry');
+            // On lui donne un ID pour la retrouver facilement au tour des noirs
+            moveEntry.id = `move-${moveNumber}`; 
             
-            const moveNumber = Math.ceil(moveCount / 2);
-            moveEntry.innerHTML = `<span>${moveNumber}.</span><span>${whiteMove}</span><span>${moveNotation}</span>`;
-            
+            moveEntry.innerHTML = `
+                <span>${moveNumber}.</span>
+                <span class="white-move">${notation}</span>
+            `;
             historyElement.appendChild(moveEntry);
-            historyElement.scrollTop = historyElement.scrollHeight; // Fait défiler vers le bas
+        } else {
+            // Si c'est le tour des noirs, on trouve la dernière ligne et on ajoute le coup
+            const moveNumber = Math.ceil(moveCount / 2);
+            const currentMoveEntry = document.getElementById(`move-${moveNumber}`);
+            
+            const blackMoveSpan = document.createElement('span');
+            blackMoveSpan.classList.add('black-move');
+            blackMoveSpan.textContent = notation;
+            currentMoveEntry.appendChild(blackMoveSpan);
         }
-        
+
+        // Faire défiler l'historique vers le bas
+        historyElement.scrollTop = historyElement.scrollHeight;
         moveCount++;
     }
 
-    // Initialiser le jeu
     createBoard();
 });
