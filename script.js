@@ -32,7 +32,6 @@ function renderUnicodePieces() {
 function updateHistory() {
     let historyHtml = '';
     historyElement.find('span').removeClass('active-move');
-
     for (let i = 0; i < fullHistory.length - 1; i += 2) {
         const moveNumber = (i / 2) + 1;
         const whiteMove = fullHistory[i + 1].move;
@@ -42,7 +41,6 @@ function updateHistory() {
         historyHtml += `<div class="move-pair">${moveNumber}. <span id="${whiteId}">${whiteMove}</span> <span id="${blackId}">${blackMove}</span></div>`;
     }
     historyElement.html(historyHtml);
-    
     if (viewIndex > 0) {
         historyElement.find(`#move-${viewIndex}`).addClass('active-move');
     }
@@ -81,12 +79,9 @@ function onSnapEnd() {
     renderUnicodePieces();
 }
 
+// LA CORRECTION EST ICI : On supprime la ligne 'pieceTheme'
 const config = {
     draggable: true,
-    // L'ASTUCE DÉCISIVE EST ICI :
-    // On donne à la bibliothèque une image valide mais invisible (pixel transparent)
-    // pour qu'elle arrête de chercher des fichiers .png et de générer des erreurs 404.
-    pieceTheme: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
     onDrop: onDrop,
     onDragStart: onDragStart,
     onSnapEnd: onSnapEnd,
