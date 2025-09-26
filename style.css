@@ -1,4 +1,3 @@
-/* Un peu de style pour centrer l'échiquier */
 body {
     display: flex;
     flex-direction: column;
@@ -6,7 +5,7 @@ body {
     font-family: sans-serif;
 }
 
-/* On cible les classes générées par chessboard.js pour les cases */
+/* Couleurs des cases (inchangé) */
 .white-1e1d7 {
     background-color: #f0d9b5; /* Beige */
     color: #f0d9b5;
@@ -15,4 +14,22 @@ body {
 .black-3c85d {
     background-color: #b58863; /* Marron */
     color: #b58863;
+}
+
+/* --- NOUVEAUX STYLES POUR LES PIÈCES UNICODE --- */
+
+/* Style pour le caractère de la pièce */
+.piece-unicode {
+    font-size: 38px; /* Ajustez si nécessaire */
+    text-align: center;
+    line-height: 45px; /* Centrage vertical */
+    width: 100%;
+    height: 100%;
+    user-select: none; /* Empêche de sélectionner le texte de la pièce */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Ajoute une petite ombre pour le relief */
+}
+
+/* On cache l'image par défaut que chessboard.js essaie de créer */
+div[id^="monEchiquier"] img {
+    display: none !important;
 }
