@@ -5,14 +5,13 @@ body {
     font-family: sans-serif;
 }
 
-/* NOUVEAU : Conteneur pour aligner l'échiquier et l'historique */
 .game-container {
     display: flex;
-    align-items: flex-start; /* Aligne les éléments en haut */
-    gap: 20px; /* Espace entre l'échiquier et l'historique */
+    align-items: flex-start;
+    gap: 20px;
 }
 
-/* Couleurs des cases (inchangé) */
+/* Couleurs des cases */
 .white-1e1d7 {
     background-color: #f0d9b5;
 }
@@ -20,7 +19,7 @@ body {
     background-color: #b58863;
 }
 
-/* Styles des pièces (inchangé) */
+/* Styles des pièces */
 .piece-unicode {
     font-size: 38px;
     text-align: center;
@@ -41,7 +40,7 @@ div[id^="monEchiquier"] img {
     text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
 }
 
-/* NOUVEAU : Style de l'encart historique */
+/* Style de l'encart historique */
 .historique-panel {
     border: 1px solid #ccc;
     background-color: #f9f9f9;
@@ -57,13 +56,18 @@ div[id^="monEchiquier"] img {
 
 #historiqueCoups {
     width: 200px;
-    height: 400px; /* Hauteur équivalente à l'échiquier */
-    overflow-y: auto; /* Ajoute une barre de défilement si la liste est trop longue */
-    font-family: monospace; /* Police plus adaptée pour les notations */
+    height: 400px;
+    overflow-y: auto;
+    font-family: monospace;
     font-size: 16px;
 }
 
-/* Style pour chaque paire de coups (ex: 1. e4 e5) */
 .move-pair {
     padding: 2px 5px;
+}
+
+/* Style pour surligner le coup actif dans l'historique */
+.active-move { 
+    background-color: #cdd9e5;
+    border-radius: 3px;
 }
