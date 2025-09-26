@@ -14,7 +14,6 @@ function onDragStart(source, piece, position, orientation) {
     }
 
     // On autorise le déplacement de n'importe quelle couleur pour le moment
-    // (on pourrait ajouter une logique pour n'autoriser que les blancs ou les noirs à jouer)
     return true;
 }
 
@@ -29,8 +28,7 @@ function onDrop(source, target) {
         promotion: 'q' // NOTE: Pour les promotions de pion, on choisit automatiquement une Dame (q)
     });
 
-    // Si le mouvement est illégal, chess.js retourne 'null'.
-    // On retourne 'snapback' pour que chessboard.js annule le mouvement visuellement.
+    // Si le mouvement est illégal, on annule le mouvement visuellement.
     if (move === null) {
         return 'snapback';
     }
@@ -38,8 +36,6 @@ function onDrop(source, target) {
 
 /**
  * Fonction appelée après qu'une pièce soit revenue à sa place (après un coup illégal).
- * On s'assure que la position visuelle de l'échiquier correspond bien à la position
- * logique enregistrée dans notre variable 'game'.
  */
 function onSnapEnd() {
     board.position(game.fen());
@@ -48,14 +44,14 @@ function onSnapEnd() {
 
 // --- CONFIGURATION DE L'ÉCHIQUIER ---
 
-// C'est ici qu'on définit toutes les options de notre échiquier visuel.
 const config = {
-    draggable: true,                                     // Rend les pièces déplaçables.
-    position: 'start',                                   // Affiche la position de départ.
-    pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/img/chesspieces/wikipedia/{piece}.png', // URL pour les images des pièces.
-    onDragStart: onDragStart,                            // Fonction à appeler quand on prend une pièce.
-    onDrop: onDrop,                                      // Fonction à appeler quand on relâche une pièce.
-    onSnapEnd: onSnapEnd                                 // Fonction à appeler après l'animation d'un mouvement illégal.
+    draggable: true,
+    position: 'start',
+    // Assurez-vous que cette ligne commence bien par "https://"
+    pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/img/chesspieces/wikipedia/{piece}.png',
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd
 };
 
 // --- INITIALISATION ---
