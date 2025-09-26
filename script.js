@@ -5,7 +5,7 @@ const boardElement = $('#monEchiquier');
 const historyElement = $('#historiqueCoups');
 
 // On stocke ici l'historique complet des coups avec les positions (FEN)
-let fullHistory = [{ move: null, fen: 'start' }]; 
+let fullHistory = [{ move: null, fen: 'start' }];
 // Index du coup actuellement affiché
 let viewIndex = 0;
 
@@ -36,7 +36,6 @@ function renderUnicodePieces() {
 
 function updateHistory() {
     let historyHtml = '';
-    // On enlève le surlignage précédent avant de redessiner
     historyElement.find('span').removeClass('active-move');
 
     for (let i = 0; i < fullHistory.length - 1; i += 2) {
@@ -44,7 +43,6 @@ function updateHistory() {
         const whiteMove = fullHistory[i + 1].move;
         const blackMove = (fullHistory[i + 2]) ? fullHistory[i + 2].move : '';
 
-        // On assigne un id unique à chaque coup pour pouvoir le cibler
         const whiteId = `move-${i + 1}`;
         const blackId = `move-${i + 2}`;
 
@@ -52,7 +50,6 @@ function updateHistory() {
     }
     historyElement.html(historyHtml);
     
-    // On surligne le coup actif
     if (viewIndex > 0) {
         historyElement.find(`#move-${viewIndex}`).addClass('active-move');
     }
@@ -65,9 +62,12 @@ function navigateTo(index) {
     viewIndex = index;
     const position = fullHistory[viewIndex].fen;
     
+    // On met à jour la logique du jeu
     game.load(position);
-    board.position(position, false);
     
+    // LIGNE CORRIGÉE : On ne demande plus à chessboard.js de dessiner la position.
+    // On appelle directement notre propre fonction de dessin.
+    // L'ancienne ligne `board.position(position, false);` a été SUPPRIMÉE car elle causait les erreurs 404.
     renderUnicodePieces();
     updateHistory();
 }
@@ -87,15 +87,11 @@ function onDrop(source, target) {
     fullHistory.push({ move: move.san, fen: game.fen() });
     viewIndex++;
     
-    // Pas besoin d'appeler renderUnicodePieces() ici car navigateTo() le fait implicitement
-    // via le changement de viewIndex et la mise à jour de l'historique
-    // Correction: si, on est à la fin, il faut le faire.
     renderUnicodePieces();
     updateHistory();
 }
 
 function onDragStart(source, piece, position, orientation) {
-    // Permet de jouer uniquement pour le camp dont c'est le tour
     if (game.game_over() || game.turn() !== piece.charAt(0)) {
         return false;
     }
@@ -108,7 +104,8 @@ function onSnapEnd() {
 
 const config = {
     draggable: true,
-    position: 'start',
+    // LIGNE CORRIGÉE : On retire 'position: 'start'' pour que la bibliothèque
+    // ne dessine pas les pièces par défaut au chargement et ne génère pas d'erreurs 404.
     onDrop: onDrop,
     onDragStart: onDragStart,
     onSnapEnd: onSnapEnd,
@@ -116,11 +113,11 @@ const config = {
 
 // --- LANCEMENT ---
 board = Chessboard('monEchiquier', config);
+// On appelle notre fonction une fois au début pour dessiner la position initiale.
 renderUnicodePieces();
 
 // --- GESTIONNAIRE D'ÉVÉNEMENTS CLAVIER ---
 $(document).on('keydown', (e) => {
-    // Empêche le défilement de la page avec les flèches
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault();
     }
