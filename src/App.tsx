@@ -3,13 +3,7 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import './App.css';
 
-interface Puzzle {
-  id: string;
-  fen: string;
-  task: string;
-  solution: string;
-}
-
+interface Puzzle { id: string; fen: string; task: string; solution: string; }
 const CONTACT_INFO = 'leopoldwatchi-creator';
 
 function App() {
@@ -26,63 +20,34 @@ function App() {
   const [gamesFound, setGamesFound] = useState(0);
   const isFetchingRef = useRef(false);
 
-  // Le code du worker est maintenant dans un fichier séparé, donc App.tsx est plus propre.
-  // Nous n'avons pas besoin de le modifier ici.
+  // NOUVEAU : Référence pour le worker Stockfish
+  const stockfishWorker = useRef<Worker | null>(null);
+
+  // NOUVEAU : Initialisation du worker avec la méthode moderne de Vite
+  useEffect(() => {
+    const worker = new Worker(new URL('./stockfish-worker.ts', import.meta.url), {
+      type: 'module'
+    });
+    worker.onmessage = (event) => {
+      console.log('Message de Stockfish :', event.data);
+    };
+    stockfishWorker.current = worker;
+    return () => {
+      worker.terminate();
+    };
+  }, []);
 
   useEffect(() => { fetch('/puzzles.json').then(r=>r.json()).then(setProblems).catch(console.error).finally(()=>setIsLoading(false)) }, []);
   useEffect(() => { if (problems.length > 0 && view === 'puzzles') { setGame(new Chess(problems[currentProblemIndex].fen)); setMoveStatus('idle'); } }, [currentProblemIndex, problems, view]);
   
   function onProblemDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null; }): boolean { if (!targetSquare || problems.length === 0) return false; const c = problems[currentProblemIndex]; const g = new Chess(game.fen()); const m = g.move({ from: sourceSquare, to: targetSquare, promotion: 'q' }); if (m === null) return false; if (m.san === c.solution) { setMoveStatus('correct'); setGame(g); setScore(p => p + 1); setTimeout(() => { setCurrentProblemIndex(p => (p + 1) % problems.length); }, 1500); } else { setMoveStatus('incorrect'); setTimeout(() => setMoveStatus('idle'), 1500); return false; } return true; }
   
-  async function handleLoadGames() {
-    if (!username) { setFetchStatus('Veuillez entrer un pseudo.'); return; }
-    setGamesFound(0);
-    setFetchStatus(`Recherche des archives pour ${username}...`);
-    setIsFetching(true);
-    isFetchingRef.current = true;
-    
-    const apiHeaders = { 'User-Agent': `MonProjetPersonnelChess/1.0 (Contact: ${CONTACT_INFO})` };
-    
-    // CORRECTION : On réintroduit le PROXY_URL
-    const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
-
-    try {
-      // On préfixe à nouveau l'URL avec le proxy
-      const archivesUrl = `${PROXY_URL}https://api.chess.com/pub/player/${username}/games/archives`;
-      const archivesRes = await fetch(archivesUrl, { headers: apiHeaders });
-      if (!archivesRes.ok) throw new Error('API Error');
-      
-      const archivesData = await archivesRes.json();
-      const archiveUrls: string[] = archivesData.archives.reverse();
-      
-      let totalGames = 0;
-      for (let i = 0; i < archiveUrls.length; i++) {
-        if (!isFetchingRef.current) { setFetchStatus('Arrêté.'); break; }
-        setFetchStatus(`Chargement ${i + 1}/${archiveUrls.length}...`);
-        
-        // On préfixe également l'URL dans la boucle
-        const gamesUrl = `${PROXY_URL}${archiveUrls[i]}`;
-        const gamesRes = await fetch(gamesUrl, { headers: apiHeaders });
-        const gamesData = await gamesRes.json();
-        totalGames += gamesData.games.length;
-        setGamesFound(totalGames);
-        await new Promise(r => setTimeout(r, 500));
-      }
-      if (isFetchingRef.current) { setFetchStatus(`Terminé. ${tG} parties.`); }
-    } catch (e) {
-      setFetchStatus('Erreur. Le proxy est peut-être inactif ou l\'API a un problème.');
-      console.error(e);
-    } finally {
-      setIsFetching(false);
-      isFetchingRef.current = false;
-    }
-  }
+  async function handleLoadGames() { if (!username) { setFetchStatus('Veuillez entrer un pseudo.'); return; } setGamesFound(0); setFetchStatus(`Recherche des archives pour ${username}...`); setIsFetching(true); isFetchingRef.current = true; const h = { 'User-Agent': `MonProjetPersonnelChess/1.0 (Contact: ${CONTACT_INFO})` }; try { const aR = await fetch(`https://api.chess.com/pub/player/${username}/games/archives`, { headers: h }); if (!aR.ok) throw new Error('API Error'); const aD = await aR.json(); const urls: string[] = aD.archives.reverse(); let tG = 0; for (let i = 0; i < urls.length; i++) { if (!isFetchingRef.current) { setFetchStatus('Arrêté.'); break; } setFetchStatus(`Chargement ${i + 1}/${urls.length}...`); const gR = await fetch(urls[i], { headers: h }); const gD = await gR.json(); tG += gD.games.length; setGamesFound(tG); await new Promise(r => setTimeout(r, 250)); } if (isFetchingRef.current) { setFetchStatus(`Terminé. ${tG} parties trouvées.`); } } catch (e) { setFetchStatus('Erreur : Joueur introuvable ou API Chess.com inaccessible.'); console.error(e); } finally { setIsFetching(false); isFetchingRef.current = false; } }
   
   function handleStopFetching() { isFetchingRef.current = false; }
   
-  // La fonction de test de Stockfish peut être enlevée si vous le souhaitez,
-  // ou conservée pour le débogage.
-  function testStockfish() { /* ... */ }
+  // NOUVEAU : Fonction pour tester notre worker
+  function testStockfish() { if (stockfishWorker.current) { console.log("Envoi de commandes de test à Stockfish..."); stockfishWorker.current.postMessage('uci'); stockfishWorker.current.postMessage('isready'); stockfishWorker.current.postMessage('position startpos'); stockfishWorker.current.postMessage('go depth 15'); } }
 
   return (
     <div className="app-container">
@@ -111,8 +76,10 @@ function App() {
             </div>
             <div className="status-text">{fetchStatus}</div>
             {gamesFound > 0 && <p>Nombre de parties trouvées : {gamesFound}</p>}
-            {/* Le bouton de test n'est plus essentiel, je l'ai masqué mais vous pouvez le remettre */}
-            {/* <div style={{...}}><button onClick={testStockfish}>Tester Stockfish</button></div> */}
+            <div style={{ marginTop: '30px', borderTop: '1px solid #444', paddingTop: '20px', width: '100%' }}>
+              <h3>Test du Moteur d'Analyse</h3>
+              <button onClick={testStockfish}>Tester Stockfish</button>
+            </div>
         </div>
       )}
     </div>
