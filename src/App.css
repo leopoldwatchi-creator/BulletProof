@@ -1,0 +1,125 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* NOUVEAU : Sélecteur d'onglets */
+.view-switcher {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  background-color: #2a2e33;
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.view-switcher button {
+  padding: 10px 20px;
+  font-size: 1em;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: transparent;
+  color: #a0a0a0;
+  transition: all 0.2s ease-in-out;
+}
+
+.view-switcher button.active {
+  background-color: #4a5a8a;
+  color: white;
+}
+
+.header {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.score-counter {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #e0e0e0;
+  background-color: #2a2e33;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+.board-container {
+  width: 100%;
+  max-width: 60vh;
+  min-width: 300px;
+  margin-top: 20px; /* Espace pour le statut */
+}
+
+.feedback-container {
+  height: 40px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.feedback-correct { color: #769656; }
+.feedback-incorrect { color: #c45151; }
+
+/* NOUVEAU : Styles pour l'outil d'analyse */
+.analyzer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.importer-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.importer-controls input {
+  padding: 10px;
+  font-size: 1em;
+  border-radius: 5px;
+  border: 1px solid #444;
+  background-color: #2a2e33;
+  color: white;
+}
+
+.importer-controls button {
+  padding: 10px 15px;
+  font-size: 1em;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #4a5a8a;
+  color: white;
+}
+
+.importer-controls button:disabled {
+  background-color: #3a3e43;
+  cursor: not-allowed;
+}
+
+.status-text {
+  margin-top: 20px;
+  color: #a0a0a0;
+  font-style: italic;
+  min-height: 20px;
+}
