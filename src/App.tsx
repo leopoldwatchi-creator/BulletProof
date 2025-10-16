@@ -19,16 +19,22 @@ function App() {
   const [fetchStatus, setFetchStatus] = useState('');
   const [gamesFound, setGamesFound] = useState(0);
   const isFetchingRef = useRef(false);
+
+  // NOUVEAU : Référence pour le worker Stockfish
   const stockfishWorker = useRef<Worker | null>(null);
 
+  // NOUVEAU : Initialisation du worker avec la méthode moderne de Vite
   useEffect(() => {
-    // On crée le worker avec la syntaxe moderne de Vite
     const worker = new Worker(new URL('./stockfish-worker.ts', import.meta.url), {
       type: 'module'
     });
-    worker.onmessage = (event) => { console.log('Message de Stockfish :', event.data); };
+    worker.onmessage = (event) => {
+      console.log('Message de Stockfish :', event.data);
+    };
     stockfishWorker.current = worker;
-    return () => { worker.terminate(); };
+    return () => {
+      worker.terminate();
+    };
   }, []);
 
   useEffect(() => { fetch('/puzzles.json').then(r=>r.json()).then(setProblems).catch(console.error).finally(()=>setIsLoading(false)) }, []);
@@ -36,11 +42,12 @@ function App() {
   
   function onProblemDrop({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null; }): boolean { if (!targetSquare || problems.length === 0) return false; const c = problems[currentProblemIndex]; const g = new Chess(game.fen()); const m = g.move({ from: sourceSquare, to: targetSquare, promotion: 'q' }); if (m === null) return false; if (m.san === c.solution) { setMoveStatus('correct'); setGame(g); setScore(p => p + 1); setTimeout(() => { setCurrentProblemIndex(p => (p + 1) % problems.length); }, 1500); } else { setMoveStatus('incorrect'); setTimeout(() => setMoveStatus('idle'), 1500); return false; } return true; }
   
-  async function handleLoadGames() { if (!username) { setFetchStatus('Veuillez entrer un pseudo.'); return; } setGamesFound(0); setFetchStatus(`Recherche des archives pour ${username}...`); setIsFetching(true); isFetchingRef.current = true; const h = { 'User-Agent': `MonProjetPersonnelChess/1.0 (Contact: ${CONTACT_INFO})` }; const p = 'https://cors-anywhere.herokuapp.com/'; try { const aR = await fetch(`${p}https://api.chess.com/pub/player/${username}/games/archives`, { headers: h }); if (!aR.ok) throw new Error('API Error'); const aD = await aR.json(); const urls: string[] = aD.archives.reverse(); let tG = 0; for (let i = 0; i < urls.length; i++) { if (!isFetchingRef.current) { setFetchStatus('Arrêté.'); break; } setFetchStatus(`Chargement ${i + 1}/${urls.length}...`); const gR = await fetch(`${p}${urls[i]}`, { headers: h }); const gD = await gR.json(); tG += gD.games.length; setGamesFound(tG); await new Promise(r => setTimeout(r, 500)); } if (isFetchingRef.current) { setFetchStatus(`Terminé. ${tG} parties.`); } } catch (e) { setFetchStatus('Erreur.'); console.error(e); } finally { setIsFetching(false); isFetchingRef.current = false; } }
+  async function handleLoadGames() { if (!username) { setFetchStatus('Veuillez entrer un pseudo.'); return; } setGamesFound(0); setFetchStatus(`Recherche des archives pour ${username}...`); setIsFetching(true); isFetchingRef.current = true; const h = { 'User-Agent': `MonProjetPersonnelChess/1.0 (Contact: ${CONTACT_INFO})` }; try { const aR = await fetch(`https://api.chess.com/pub/player/${username}/games/archives`, { headers: h }); if (!aR.ok) throw new Error('API Error'); const aD = await aR.json(); const urls: string[] = aD.archives.reverse(); let tG = 0; for (let i = 0; i < urls.length; i++) { if (!isFetchingRef.current) { setFetchStatus('Arrêté.'); break; } setFetchStatus(`Chargement ${i + 1}/${urls.length}...`); const gR = await fetch(urls[i], { headers: h }); const gD = await gR.json(); tG += gD.games.length; setGamesFound(tG); await new Promise(r => setTimeout(r, 250)); } if (isFetchingRef.current) { setFetchStatus(`Terminé. ${tG} parties trouvées.`); } } catch (e) { setFetchStatus('Erreur : Joueur introuvable ou API Chess.com inaccessible.'); console.error(e); } finally { setIsFetching(false); isFetchingRef.current = false; } }
   
   function handleStopFetching() { isFetchingRef.current = false; }
   
-  function testStockfish() { if (stockfishWorker.current) { console.log("Test Stockfish..."); stockfishWorker.current.postMessage('uci'); stockfishWorker.current.postMessage('isready'); stockfishWorker.current.postMessage('position startpos'); stockfishWorker.current.postMessage('go depth 15'); } }
+  // NOUVEAU : Fonction pour tester notre worker
+  function testStockfish() { if (stockfishWorker.current) { console.log("Envoi de commandes de test à Stockfish..."); stockfishWorker.current.postMessage('uci'); stockfishWorker.current.postMessage('isready'); stockfishWorker.current.postMessage('position startpos'); stockfishWorker.current.postMessage('go depth 15'); } }
 
   return (
     <div className="app-container">
@@ -52,18 +59,10 @@ function App() {
         <>
           {isLoading ? <h1>Chargement...</h1> : (
             <>
-              <div className="header">
-                <h1>Mon Lichess - Problèmes</h1>
-                <div className="score-counter">Score : {score}</div>
-              </div>
+              <div className="header"><h1>Mon Lichess - Problèmes</h1><div className="score-counter">Score : {score}</div></div>
               <h2>{problems.length > 0 ? problems[currentProblemIndex].task : 'Aucun problème'}</h2>
-              <div className="feedback-container">
-                {moveStatus === 'correct' && <p className="feedback-correct">Bien joué !</p>}
-                {moveStatus === 'incorrect' && <p className="feedback-incorrect">Mauvais coup !</p>}
-              </div>
-              <div className="board-container">
-                <Chessboard options={{ position: game.fen(), onPieceDrop: onProblemDrop, allowDragging: true }} />
-              </div>
+              <div className="feedback-container">{moveStatus === 'correct' && <p className="feedback-correct">Bien joué !</p>}{moveStatus === 'incorrect' && <p className="feedback-incorrect">Mauvais coup !</p>}</div>
+              <div className="board-container"><Chessboard options={{ position: game.fen(), onPieceDrop: onProblemDrop, allowDragging: true }} /></div>
             </>
           )}
         </>

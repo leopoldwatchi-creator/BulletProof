@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [
     react(),
+    // Ajoute les en-têtes de sécurité COOP/COEP nécessaires pour Stockfish
     {
       name: 'configure-response-headers',
       configureServer: server => {
@@ -14,5 +15,9 @@ export default defineConfig({
         });
       }
     }
-  ]
+  ],
+  // Indique à Vite comment "empaqueter" le worker et ses dépendances
+  worker: {
+    format: 'iife'
+  }
 })
